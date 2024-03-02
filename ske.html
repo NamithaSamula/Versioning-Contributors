@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Snake Game</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #111;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    #game-area {
+      width: 400px;
+      height: 400px;
+      display: grid;
+      grid-template-columns: repeat(20, 1fr);
+      grid-template-rows: repeat(20, 1fr);
+    }
+
+    .tile {
+      background-color: #333;
+      border: 1px solid #000;
+    }
+
+    .snake-head {
+      background-color: red;
+      border-radius: 50%;
+      box-shadow: 0 0 5px black;
+    }
+
+    .snake-body {
+      background-color: gray;
+      border-radius: 50%;
+      box-shadow: 0 0 5px black;
+    }
+
+    .food {
+      background-color: #00ff00;
+      box-shadow: 0 0 10px #00ff00, 0 0 20px #00ff00, 0 0 40px #00ff00, 0 0 80px #00ff00;
+    }
+  </style>
+</head>
+<body>
+  <div id="game-area"></div>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const gameArea = document.getElementById('game-area');
+      const gridSize = 20;
+      const gridWidth = gameArea.clientWidth / gridSize;
+      const gridHeight = gameArea.clientHeight / gridSize;
+      const snake = [{ x: 10, y: 10 }];
+      let food = generateFood();
+      let dx = 0;
+      let dy = 0;
+      let score = 0;
+
+      function draw() {
+        gameArea.innerHTML = '';
+        drawSnake();
+        drawFood();
+      }
+
+      function drawSnake() {
+        snake.forEach((segment, index) => {
+          const snakeElement = document.createElement('div');
+          snakeElement.style.gridRowStart = segment.y;
+          snakeElement.style.gridColumnStart = segment.x;
+          snakeElement.classList.add('tile');
+          if (index === 0) {
+            snakeElement.classList.add('snake-head');
+          } else {
+            snakeElement.classList.add('snake-body');
+          }
+          gameArea.appendChild(snakeElement);
+        });
+      }
+
+      function drawFood() {
+        const foodElement = document.createElement('div');
+        foodElement.style.gridRowStart = food.y;
+        foodElement.style.gridColumnStart = food.x;
+        foodElement.classList.add('tile', 'food');
+        gameArea.appendChild(foodElement);
+      }
+
+      function moveSnake() {
+        const head = { x: snake[0].x + dx, y: snake[0].y + dy };
+        snake.unshift(head);
+
+        if (head.x === food.x && head.y === food.y) {
+          score++;
+          food = generateFood();
+        } else {
+          snake.pop();
+        }
+      }
+
+      function generateFood() {
+        return {
+          x: Math.floor(Math.random() * gridWidth) + 1,
+          y: Math.floor(Math.random() * gridHeight) + 1
+        };
+      }
+
+      function changeDirection(event) {
+        const keyPressed = event.key;
+        if (keyPressed === 'ArrowUp' && dy === 0) {
+          dx = 0;
+          dy = -1;
+        }
+        if (keyPressed === 'ArrowDown' && dy === 0) {
+          dx = 0;
+          dy = 1;
+        }
+        if (keyPressed === 'ArrowLeft' && dx === 0) {
+          dx = -1;
+          dy = 0;
+        }
+        if (keyPressed === 'ArrowRight' && dx === 0) {
+          dx = 1;
+          dy = 0;
+        }
+      }
+
+      function checkCollision() {
+        return (
+          snake[0].x < 1 || snake[0].x > gridWidth ||
+          snake[0].y < 1 || snake[0].y > gridHeight ||
+          snake.slice(1).some(segment => segment.x === snake[0].x && segment.y === snake[0].y)
+        );
+      }
+
+      function main() {
+        if (checkCollision()) {
+          alert(`Game Over! Your score is ${score}`);
+          return;
+        }
+
+        moveSnake();
+        draw();
+        setTimeout(main, 100);
+      }
+
+      document.addEventListener('keydown', changeDirection);
+      main();
+    });
+  </script>
+</body>
+</html>
+
+
+
